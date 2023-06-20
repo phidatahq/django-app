@@ -29,6 +29,7 @@ prd_app_image = DockerImage(
     tag=ws_settings.prd_env,
     enabled=ws_settings.build_images,
     path=str(ws_settings.ws_root),
+    dockerfile="prd.Dockerfile",
     platform="linux/amd64",
     pull=ws_settings.force_pull_images,
     push_image=ws_settings.push_images,

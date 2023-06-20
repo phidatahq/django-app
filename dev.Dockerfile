@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED=1
 RUN groupadd -g 61000 ${USER} \
   && useradd -g 61000 -u 61000 -ms /bin/bash -d ${APP_DIR} ${USER}
 
-WORKDIR ${APP_DIR}}
+WORKDIR ${APP_DIR}
 
 # Update pip
 RUN pip install --upgrade pip
