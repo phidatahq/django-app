@@ -55,6 +55,8 @@ dev_django = DjangoApp(
     use_cache=ws_settings.use_cache,
     # Read secrets from secrets/dev_app_secrets.yml
     secrets_file=ws_settings.ws_root.joinpath("workspace/secrets/dev_app_secrets.yml"),
+    # Uncomment to run in debug mode and keep the container after it exits
+    # debug_mode=True,
 )
 
 # -*- DockerConfig defining the dev resources
