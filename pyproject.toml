@@ -1,0 +1,65 @@
+[project]
+name = "app"
+version = "0.1.0"
+requires-python = ">3.7"
+readme = "README.md"
+authors = [
+  {name = "Team", email = "team@team.com"}
+]
+
+dependencies = [
+  # Django Libraries
+  "django",
+  "djangorestframework",
+  # Database Libraries
+  "psycopg[binary]",
+  "sqlalchemy",
+  # Formatting
+  "black",
+  # Type checking
+  "mypy",
+  # Testing
+  "pytest",
+  # Linting
+  "ruff",
+  # Phidata
+  "phidata==1.7.7",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app", "tests", "workspace"]
+
+# Update this value if the workspace directory is renamed.
+# [tool.phidata]
+# workspace = "workspace"
+
+[tool.ruff]
+line-length = 110
+exclude = [
+  "appenv*",
+  ".venv*",
+]
+
+[tool.mypy]
+plugins = [
+  "pydantic.mypy",
+  "sqlalchemy.ext.mypy.plugin",
+]
+check_untyped_defs = true
+no_implicit_optional = true
+warn_unused_configs = true
+exclude = [
+  "appenv*",
+  ".venv*",
+]
+
+[[tool.mypy.overrides]]
+module = [
+  "phidata.*",
+  "setuptools.*",
+]
+ignore_missing_imports = true

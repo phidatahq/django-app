@@ -1,0 +1,28 @@
+docs
+.git
+config.json
+Pipfile
+Pipfile.lock
+
+# Cache
+.mypy_cache
+.ruff_cache
+.pytest_cache
+*__pycache__*
+*.egg-info
+*.pyc
+
+# Machine specific
+.idea
+.vscode
+
+# Ignore .env files
+.env
+.envrc
+
+# ignore virtualenv
+.venv
+venv*
+appenv*
+
+.DS_Store
