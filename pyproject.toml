@@ -11,6 +11,7 @@ dependencies = [
   # Django Libraries
   "django",
   "djangorestframework",
+  "gunicorn",
   # Database Libraries
   "psycopg[binary]",
   "sqlalchemy",
