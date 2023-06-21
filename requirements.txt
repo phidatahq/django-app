@@ -35,8 +35,8 @@ numpy==1.24.3
 oauthlib==3.2.2
 packaging==23.1
 pathspec==0.11.1
-phidata==1.7.7
-phiterm==1.7.7
+phidata==1.7.8
+phiterm==1.7.8
 platformdirs==3.5.0
 pluggy==1.0.0
 psycopg[binary]==3.1.9
