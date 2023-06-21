@@ -40,6 +40,7 @@ dev_django = DjangoApp(
     command="python manage.py runserver 0.0.0.0:8000",
     env={
         "DEBUG": True,
+        "RUNTIME_ENV": "dev",
         # Database configuration
         "DB_HOST": dev_db.get_db_host_docker(),
         "DB_PORT": dev_db.get_db_port_docker(),

@@ -175,8 +175,9 @@ prd_django = DjangoApp(
     aws_security_groups=[prd_app_sg],
     load_balancer_security_groups=[prd_lb_sg],
     create_load_balancer=create_load_balancer,
-    health_check_path="/v1/ping",
+    health_check_path="/health",
     env={
+        "DEBUG": True,
         "RUNTIME_ENV": "prd",
         # Database configuration
         "DB_HOST": AwsReference(prd_db.get_db_endpoint),
