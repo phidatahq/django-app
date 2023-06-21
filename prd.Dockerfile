@@ -25,7 +25,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Collect static files
-RUN python manage.py collectstatic
+RUN python manage.py collectstatic --noinput
 
 # To expose files from a Dockerfile to a data volume,
 # the Amazon ECS data plane looks for a VOLUME directive.
