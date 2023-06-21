@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: Dockerfile
+          file: dev.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.ECR_REPO }}/django:dev
@@ -67,7 +67,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: Dockerfile
+          file: prd.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.ECR_REPO }}/django:prd
