@@ -9,7 +9,7 @@ This repo contains the code for running an Django App in 2 environments:
 
 1. Clone the git repo
 
-> from the `api-app` dir:
+> from the `django-app` dir:
 
 2. Create + activate a virtual env:
 
