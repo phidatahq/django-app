@@ -155,6 +155,8 @@ prd_db = DbInstance(
     # secrets_file=ws_settings.ws_root.joinpath("workspace/secrets/prd_db_secrets.yml"),
     skip_delete=skip_delete,
     save_output=save_output,
+    # Do not wait for the db to be active as the DjangoApp waits for the db to be ready
+    wait_for_creation=False,
 )
 
 # -*- DjangoApp running on ECS
