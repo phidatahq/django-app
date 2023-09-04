@@ -1,66 +1,49 @@
 [project]
-name = "app"
+name = "django-app"
 version = "0.1.0"
 requires-python = ">3.7"
 readme = "README.md"
-authors = [
-  {name = "Team", email = "team@team.com"}
-]
+authors = [{ name = "Team", email = "team@team.com" }]
 
 dependencies = [
-  # Django Libraries
+  # Django libraries
   "django",
   "djangorestframework",
   "gunicorn",
-  # Database Libraries
+  # Database libraries
   "psycopg[binary]",
   "sqlalchemy",
   # Formatting
   "black",
   # Type checking
   "mypy",
-  # Testing
-  "pytest",
   # Linting
   "ruff",
-  # Phidata
-  "phidata==1.7.8",
+  # phidata
+  "phidata==2.0.0.dev29",
 ]
 
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["app", "tests", "workspace"]
+[tool.setuptools.packages.find]
 
-# Update this value if the workspace directory is renamed.
+# Change this value to use a different directory for the phidata workspace.
 # [tool.phidata]
 # workspace = "workspace"
 
 [tool.ruff]
 line-length = 110
-exclude = [
-  "appenv*",
-  ".venv*",
-]
+exclude = ["appenv*", ".venv*"]
 
 [tool.mypy]
-plugins = [
-  "pydantic.mypy",
-  "sqlalchemy.ext.mypy.plugin",
-]
+plugins = ["pydantic.mypy"]
 check_untyped_defs = true
 no_implicit_optional = true
 warn_unused_configs = true
-exclude = [
-  "appenv*",
-  ".venv*",
-]
+exclude = ["appenv*", ".venv*"]
 
 [[tool.mypy.overrides]]
-module = [
-  "phidata.*",
-  "setuptools.*",
-]
+module = ["phi.*", "setuptools.*"]
 ignore_missing_imports = true

@@ -1,4 +1,4 @@
-FROM nginx:1.19.0-alpine
+FROM nginx:1.25.2-alpine
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d
@@ -10,7 +10,6 @@ COPY nginx.conf /etc/nginx/conf.d
 # the data in the VOLUME directive path is copied to the data volume.
 # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bind-mounts.html
 RUN mkdir -p /usr/local/app
-# COPY --from=281228197609.dkr.ecr.ap-south-1.amazonaws.com/triestai-web:prd /usr/local/app /usr/local/app
 VOLUME ["/usr/local/app"]
 
 EXPOSE 80

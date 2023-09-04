@@ -1,29 +1,26 @@
-from phidata.app.django import DjangoApp
-from phidata.aws.config import AwsConfig
-from phidata.aws.resource.group import (
-    AwsResourceGroup,
-    DbInstance,
-    DbSubnetGroup,
-    SecretsManager,
-    SecurityGroup,
-    InboundRule,
-)
-from phidata.docker.config import DockerConfig, DockerImage
-from phidata.resource.reference import AwsReference
+from phi.aws.app.django import Django
+from phi.aws.resource.ec2.security_group import InboundRule, SecurityGroup
+from phi.aws.resource.group import AwsResourceGroup
+from phi.aws.resource.rds.db_instance import DbInstance
+from phi.aws.resource.rds.db_subnet_group import DbSubnetGroup
+from phi.aws.resource.reference import AwsReference
+from phi.aws.resource.secret.manager import SecretsManager
+from phi.docker.resource.image import DockerImage
+from phi.docker.resource.group import DockerResourceGroup
 
 from workspace.settings import ws_settings
 
 #
 # -*- Resources for the Production Environment
 #
-# Skip resource deletion when running `phi ws down`
+# Skip resource deletion when running `phi ws down` (set to True after initial deployment)
 skip_delete: bool = False
 # Save resource outputs to workspace/outputs
 save_output: bool = True
 # Create load balancer for the application
 create_load_balancer: bool = True
 
-# -*- Production Images
+# -*- Production images
 prd_app_image = DockerImage(
     name=f"{ws_settings.image_repo}/{ws_settings.ws_name}",
     tag=ws_settings.prd_env,
@@ -36,7 +33,7 @@ prd_app_image = DockerImage(
     skip_docker_cache=ws_settings.skip_image_cache,
 )
 prd_nginx_image = DockerImage(
-    name=f"{ws_settings.image_repo}/django-nginx",
+    name=f"{ws_settings.image_repo}/{ws_settings.ws_name}-nginx",
     tag=ws_settings.prd_env,
     enabled=ws_settings.build_images,
     path=str(ws_settings.ws_root.joinpath("nginx")),
@@ -47,8 +44,9 @@ prd_nginx_image = DockerImage(
 )
 
 # -*- Secrets for production application
-prd_app_secret = SecretsManager(
-    name=f"{ws_settings.prd_key}-app-secret",
+prd_secret = SecretsManager(
+    name=f"{ws_settings.prd_key}-secret",
+    group="app",
     # Create secret from workspace/secrets/prd_app_secrets.yml
     secret_files=[
         ws_settings.ws_root.joinpath("workspace/secrets/prd_app_secrets.yml")
@@ -59,6 +57,7 @@ prd_app_secret = SecretsManager(
 # -*- Secrets for production database
 prd_db_secret = SecretsManager(
     name=f"{ws_settings.prd_key}-db-secret",
+    group="db",
     # Create secret from workspace/secrets/prd_db_secrets.yml
     secret_files=[ws_settings.ws_root.joinpath("workspace/secrets/prd_db_secrets.yml")],
     skip_delete=skip_delete,
@@ -69,6 +68,7 @@ prd_db_secret = SecretsManager(
 prd_lb_sg = SecurityGroup(
     name=f"{ws_settings.prd_key}-lb-security-group",
     enabled=create_load_balancer,
+    group="app",
     description="Security group for the load balancer",
     inbound_rules=[
         InboundRule(
@@ -85,11 +85,12 @@ prd_lb_sg = SecurityGroup(
     skip_delete=skip_delete,
     save_output=save_output,
 )
-# -*- Security Group for the api
-prd_app_sg = SecurityGroup(
-    name=f"{ws_settings.prd_key}-app-security-group",
+# -*- Security Group for the application
+prd_sg = SecurityGroup(
+    name=f"{ws_settings.prd_key}-security-group",
     enabled=ws_settings.prd_app_enabled,
-    description="Security group for the production api",
+    group="app",
+    description="Security group for the production application",
     inbound_rules=[
         InboundRule(
             description="Allow traffic from LB to the Django App",
@@ -111,15 +112,16 @@ prd_db_port = 5432
 prd_db_sg = SecurityGroup(
     name=f"{ws_settings.prd_key}-db-security-group",
     enabled=ws_settings.prd_app_enabled,
+    group="db",
     description="Security group for the production database",
     inbound_rules=[
         InboundRule(
             description="Allow traffic from the FastAPI server to the database",
             port=prd_db_port,
-            source_security_group_id=AwsReference(prd_app_sg.get_security_group_id),
+            source_security_group_id=AwsReference(prd_sg.get_security_group_id),
         ),
     ],
-    depends_on=[prd_app_sg],
+    depends_on=[prd_sg],
     skip_delete=skip_delete,
     save_output=save_output,
 )
@@ -128,6 +130,7 @@ prd_db_sg = SecurityGroup(
 prd_db_subnet_group = DbSubnetGroup(
     name=f"{ws_settings.prd_key}-db-sg",
     enabled=ws_settings.prd_db_enabled,
+    group="db",
     subnet_ids=ws_settings.subnet_ids,
     skip_delete=skip_delete,
     save_output=save_output,
@@ -138,7 +141,8 @@ db_engine = "postgres"
 prd_db = DbInstance(
     name=f"{ws_settings.prd_key}-db",
     enabled=ws_settings.prd_db_enabled,
-    db_name="prd",
+    group="db",
+    db_name="app",
     engine=db_engine,
     port=prd_db_port,
     engine_version="15.3",
@@ -151,17 +155,15 @@ prd_db = DbInstance(
     enable_performance_insights=True,
     db_security_groups=[prd_db_sg],
     aws_secret=prd_db_secret,
-    # Uncomment to read secrets from secrets/prd_db_secrets.yml
-    # secrets_file=ws_settings.ws_root.joinpath("workspace/secrets/prd_db_secrets.yml"),
     skip_delete=skip_delete,
     save_output=save_output,
-    # Do not wait for the db to be active as the DjangoApp waits for the db to be ready
-    wait_for_creation=False,
+    # Do not wait for the db to be deleted
+    wait_for_delete=False,
 )
 
-# -*- DjangoApp running on ECS
+# -*- Django running on ECS
 launch_type = "FARGATE"
-prd_django = DjangoApp(
+prd_django = Django(
     name=ws_settings.prd_key,
     enabled=ws_settings.prd_app_enabled,
     image=prd_app_image,
@@ -169,18 +171,20 @@ prd_django = DjangoApp(
     # Enable nginx to serve static files
     enable_nginx=True,
     nginx_image=prd_nginx_image,
-    ecs_task_cpu="1024",
-    ecs_task_memory="2048",
+    ecs_task_cpu="2048",
+    ecs_task_memory="4096",
     ecs_service_count=1,
-    aws_subnets=ws_settings.subnet_ids,
-    aws_secrets=[prd_app_secret],
-    aws_security_groups=[prd_app_sg],
+    aws_secrets=[prd_secret],
+    subnets=ws_settings.subnet_ids,
+    security_groups=[prd_sg],
+    # To enable HTTPS, uncomment the following lines:
+    # load_balancer_enable_https=True,
+    # load_balancer_certificate_arn="LOAD_BALANCER_CERTIFICATE_ARN",
     load_balancer_security_groups=[prd_lb_sg],
     create_load_balancer=create_load_balancer,
     health_check_path="/health",
-    env={
+    env_vars={
         "DEBUG": True,
-        "RUNTIME_ENV": "prd",
         # Database configuration
         "DB_HOST": AwsReference(prd_db.get_db_endpoint),
         "DB_PORT": AwsReference(prd_db.get_db_port),
@@ -196,26 +200,29 @@ prd_django = DjangoApp(
     skip_delete=skip_delete,
     save_output=save_output,
     # Do not wait for the service to stabilize
-    wait_for_creation=False,
-    # Uncomment to read secrets from secrets/prd_app_secrets.yml
-    # secrets_file=ws_settings.ws_root.joinpath("workspace/secrets/prd_app_secrets.yml"),
+    wait_for_create=False,
+    # Do not wait for the service to be deleted
+    wait_for_delete=False,
 )
 
-# -*- DockerConfig defining the prd resources
-prd_docker_config = DockerConfig(
+# -*- DockerResourceGroup defining the production docker resources
+prd_docker_config = DockerResourceGroup(
     env=ws_settings.prd_env,
     network=ws_settings.ws_name,
     images=[prd_app_image, prd_nginx_image],
 )
 
-# -*- AwsConfig defining the prd resources
-prd_aws_config = AwsConfig(
+# -*- AwsResourceGroup defining production aws resources
+prd_aws_config = AwsResourceGroup(
     env=ws_settings.prd_env,
     apps=[prd_django],
-    resources=AwsResourceGroup(
-        db_subnet_groups=[prd_db_subnet_group],
-        db_instances=[prd_db],
-        secrets=[prd_app_secret, prd_db_secret],
-        security_groups=[prd_lb_sg, prd_app_sg, prd_db_sg],
-    ),
+    resources=[
+        prd_lb_sg,
+        prd_sg,
+        prd_db_sg,
+        prd_secret,
+        prd_db_secret,
+        prd_db_subnet_group,
+        prd_db,
+    ],
 )
