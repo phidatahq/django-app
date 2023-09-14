@@ -183,7 +183,7 @@ prd_django = Django(
     aws_secrets=[prd_secret],
     subnets=ws_settings.subnet_ids,
     security_groups=[prd_sg],
-    # To enable HTTPS, uncomment the following lines:
+    # To enable HTTPS, create an ACM certificate and add the ARN below:
     # load_balancer_enable_https=True,
     # load_balancer_certificate_arn="LOAD_BALANCER_CERTIFICATE_ARN",
     load_balancer_security_groups=[prd_lb_sg],
@@ -191,6 +191,9 @@ prd_django = Django(
     health_check_path="/health",
     env_vars={
         "DEBUG": True,
+        "RUNTIME_ENV": "prd",
+        # Get the OpenAI API key from the local environment
+        "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
         # Database configuration
         "DB_HOST": AwsReference(prd_db.get_db_endpoint),
         "DB_PORT": AwsReference(prd_db.get_db_port),

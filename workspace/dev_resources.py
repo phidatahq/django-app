@@ -28,9 +28,12 @@ dev_image = DockerImage(
 dev_db = PgVectorDb(
     name=f"{ws_settings.dev_key}-db",
     enabled=ws_settings.dev_db_enabled,
-    db_user="app",
-    db_password="app",
-    db_schema="app",
+    pg_user="app",
+    pg_password="app",
+    pg_database="app",
+    # Connect to this db on port 5432
+    host_port=5432,
+    debug_mode=True,
 )
 
 # -*- Django running on port 8000
@@ -52,7 +55,7 @@ dev_django = Django(
         "DB_PORT": dev_db.get_db_port(),
         "DB_USER": dev_db.get_db_user(),
         "DB_PASS": dev_db.get_db_password(),
-        "DB_SCHEMA": dev_db.get_db_schema(),
+        "DB_DATABASE": dev_db.get_db_database(),
         # Wait for database to be available before starting the application
         "WAIT_FOR_DB": ws_settings.dev_db_enabled,
         # Migrate database on startup using python manage.py migrate in entrypoint.sh

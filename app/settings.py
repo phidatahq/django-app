@@ -80,7 +80,7 @@ DATABASES = {
         "HOST": os.getenv("DB_HOST"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASS"),
-        "NAME": os.getenv("DB_SCHEMA"),
+        "NAME": os.getenv("DB_DATABASE"),
     }
 }
 

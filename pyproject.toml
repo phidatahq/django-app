@@ -46,5 +46,5 @@ plugins = ["pydantic.mypy"]
 exclude = ["appenv*", ".venv*"]
 
 [[tool.mypy.overrides]]
-module = ["setuptools.*"]
+module = ["django.*", "pgvector.*", "setuptools.*"]
 ignore_missing_imports = true
