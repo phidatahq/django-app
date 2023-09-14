@@ -1,12 +1,14 @@
+from os import getenv
+
 from phi.aws.app.django import Django
 from phi.aws.resource.ec2.security_group import InboundRule, SecurityGroup
-from phi.aws.resource.group import AwsResourceGroup
+from phi.aws.resources import AwsResources
 from phi.aws.resource.rds.db_instance import DbInstance
 from phi.aws.resource.rds.db_subnet_group import DbSubnetGroup
 from phi.aws.resource.reference import AwsReference
 from phi.aws.resource.secret.manager import SecretsManager
+from phi.docker.resources import DockerResources
 from phi.docker.resource.image import DockerImage
-from phi.docker.resource.group import DockerResourceGroup
 
 from workspace.settings import ws_settings
 
@@ -148,8 +150,8 @@ prd_db = DbInstance(
     engine_version="15.3",
     allocated_storage=64,
     # NOTE: For production, use a larger instance type.
-    # Last checked price: $0.0320 per hour = ~$25 per month
-    db_instance_class="db.t4g.small",
+    # Last checked price: $0.0650 hourly = ~$50 per month
+    db_instance_class="db.t4g.medium",
     availability_zone=ws_settings.aws_az1,
     db_subnet_group=prd_db_subnet_group,
     enable_performance_insights=True,
@@ -168,9 +170,13 @@ prd_django = Django(
     enabled=ws_settings.prd_app_enabled,
     image=prd_app_image,
     command="gunicorn --workers 3 --bind 0.0.0.0:8000 --max-requests 1000 app.wsgi:application",
-    # Enable nginx to serve static files
+    # Enable Nginx to serve static files
     enable_nginx=True,
     nginx_image=prd_nginx_image,
+    # Run Nginx on port 80
+    nginx_container_port=80,
+    # Run the Django app on port 8000
+    port_number=8000,
     ecs_task_cpu="2048",
     ecs_task_memory="4096",
     ecs_service_count=1,
@@ -191,10 +197,10 @@ prd_django = Django(
         "DB_USER": AwsReference(prd_db.get_master_username),
         "DB_PASS": AwsReference(prd_db.get_master_user_password),
         "DB_SCHEMA": AwsReference(prd_db.get_db_name),
-        # Migrate database on startup using python manage.py migrate in entrypoint.sh
-        "MIGRATE_DB": True,
         # Wait for database to be available before starting the application
         "WAIT_FOR_DB": True,
+        # Migrate database on startup using python manage.py migrate in entrypoint.sh
+        "MIGRATE_DB": True,
     },
     use_cache=ws_settings.use_cache,
     skip_delete=skip_delete,
@@ -205,15 +211,15 @@ prd_django = Django(
     wait_for_delete=False,
 )
 
-# -*- DockerResourceGroup defining the production docker resources
-prd_docker_config = DockerResourceGroup(
+# -*- Production DockerResources
+prd_docker_config = DockerResources(
     env=ws_settings.prd_env,
     network=ws_settings.ws_name,
     images=[prd_app_image, prd_nginx_image],
 )
 
-# -*- AwsResourceGroup defining production aws resources
-prd_aws_config = AwsResourceGroup(
+# -*- Production AwsResources
+prd_aws_config = AwsResources(
     env=ws_settings.prd_env,
     apps=[prd_django],
     resources=[

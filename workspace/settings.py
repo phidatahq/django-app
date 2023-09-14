@@ -8,7 +8,7 @@ from phi.workspace.settings import WorkspaceSettings
 #
 ws_settings = WorkspaceSettings(
     # Workspace name: used for naming cloud resources
-    ws_name="django-app",
+    ws_name="django",
     # Path to the workspace root
     ws_root=Path(__file__).parent.parent.resolve(),
     # -*- Dev settings

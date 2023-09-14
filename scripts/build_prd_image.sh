@@ -2,8 +2,8 @@
 
 set -e
 
-CURR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-WS_ROOT="$( dirname ${CURR_DIR} )"
+CURR_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" && pwd)"
+WS_ROOT="$(dirname ${CURR_DIR})"
 DOCKER_FILE="Dockerfile"
 REPO="repo"
 NAME="django"

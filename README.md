@@ -2,8 +2,8 @@
 
 This repo contains the code for running a Django App in 2 environments:
 
-1. dev: A development env running on docker
-2. prd: A production env running on AWS ECS
+1. `dev`: A development environment running locally on docker
+2. `prd`: A production environment running on AWS ECS
 
 ## Setup Workspace (for new users)
 
@@ -42,12 +42,12 @@ cp -r workspace/example_secrets workspace/secrets
 cp example.env .env
 ```
 
-## Run Django App locally using docker
+## Run Django App locally on docker
 
 The `workspace/dev_resources.py` file contains the code for the development resources. Install [docker desktop](https://www.docker.com/products/docker-desktop) and start the workspace using:
 
 ```sh
-phi ws up dev:docker
+phi ws up --env dev --infra docker
 ```
 
 Open [localhost:8000](http://localhost:8000) to view the Django server.

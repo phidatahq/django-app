@@ -1,7 +1,9 @@
+from os import getenv
+
 from phi.docker.app.django import Django
-from phi.docker.app.postgres import PostgresDb
+from phi.docker.app.postgres import PgVectorDb
+from phi.docker.resources import DockerResources
 from phi.docker.resource.image import DockerImage
-from phi.docker.resource.group import DockerResourceGroup
 
 from workspace.settings import ws_settings
 
@@ -23,7 +25,7 @@ dev_image = DockerImage(
 )
 
 # -*- Dev database running on port 5432:5432
-dev_db = PostgresDb(
+dev_db = PgVectorDb(
     name=f"{ws_settings.dev_key}-db",
     enabled=ws_settings.dev_db_enabled,
     db_user="app",
@@ -33,32 +35,36 @@ dev_db = PostgresDb(
 
 # -*- Django running on port 8000
 dev_django = Django(
-    name=ws_settings.dev_key,
+    name=f"{ws_settings.dev_key}-app",
     enabled=ws_settings.dev_app_enabled,
     image=dev_image,
     command="python manage.py runserver 0.0.0.0:8000",
+    port_number=8000,
     debug_mode=True,
     mount_workspace=True,
     env_vars={
         "DEBUG": True,
+        "RUNTIME_ENV": "dev",
+        # Get the OpenAI API key from the local environment
+        "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
         # Database configuration
         "DB_HOST": dev_db.get_db_host(),
         "DB_PORT": dev_db.get_db_port(),
         "DB_USER": dev_db.get_db_user(),
         "DB_PASS": dev_db.get_db_password(),
         "DB_SCHEMA": dev_db.get_db_schema(),
-        # Migrate database on startup using python manage.py migrate in entrypoint.sh
-        "MIGRATE_DB": ws_settings.dev_db_enabled,
         # Wait for database to be available before starting the application
         "WAIT_FOR_DB": ws_settings.dev_db_enabled,
+        # Migrate database on startup using python manage.py migrate in entrypoint.sh
+        "MIGRATE_DB": ws_settings.dev_db_enabled,
     },
     use_cache=ws_settings.use_cache,
     # Read secrets from secrets/dev_app_secrets.yml
     secrets_file=ws_settings.ws_root.joinpath("workspace/secrets/dev_app_secrets.yml"),
 )
 
-# -*- DockerResourceGroup defining the dev docker resources
-dev_docker_resources = DockerResourceGroup(
+# -*- Dev DockerResources
+dev_docker_resources = DockerResources(
     env=ws_settings.dev_env,
     network=ws_settings.ws_name,
     apps=[dev_db, dev_django],
