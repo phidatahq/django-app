@@ -34,6 +34,7 @@ prd_app_image = DockerImage(
     push_image=ws_settings.push_images,
     skip_docker_cache=ws_settings.skip_image_cache,
 )
+
 prd_nginx_image = DockerImage(
     name=f"{ws_settings.image_repo}/{ws_settings.ws_name}-nginx",
     tag=ws_settings.prd_env,
@@ -163,6 +164,23 @@ prd_db = DbInstance(
     wait_for_delete=False,
 )
 
+container_env = {
+    "DEBUG": True,
+    "RUNTIME_ENV": "prd",
+    # Get the OpenAI API key from the local environment
+    "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
+    # Database configuration
+    "DB_HOST": AwsReference(prd_db.get_db_endpoint),
+    "DB_PORT": AwsReference(prd_db.get_db_port),
+    "DB_USER": AwsReference(prd_db.get_master_username),
+    "DB_PASS": AwsReference(prd_db.get_master_user_password),
+    "DB_SCHEMA": AwsReference(prd_db.get_db_name),
+    # Wait for database to be available before starting the application
+    "WAIT_FOR_DB": True,
+    # Migrate database on startup using python manage.py migrate in entrypoint.sh
+    "MIGRATE_DB": True,
+}
+
 # -*- Django running on ECS
 launch_type = "FARGATE"
 prd_django = Django(
@@ -189,22 +207,7 @@ prd_django = Django(
     load_balancer_security_groups=[prd_lb_sg],
     create_load_balancer=create_load_balancer,
     health_check_path="/health",
-    env_vars={
-        "DEBUG": True,
-        "RUNTIME_ENV": "prd",
-        # Get the OpenAI API key from the local environment
-        "OPENAI_API_KEY": getenv("OPENAI_API_KEY"),
-        # Database configuration
-        "DB_HOST": AwsReference(prd_db.get_db_endpoint),
-        "DB_PORT": AwsReference(prd_db.get_db_port),
-        "DB_USER": AwsReference(prd_db.get_master_username),
-        "DB_PASS": AwsReference(prd_db.get_master_user_password),
-        "DB_SCHEMA": AwsReference(prd_db.get_db_name),
-        # Wait for database to be available before starting the application
-        "WAIT_FOR_DB": True,
-        # Migrate database on startup using python manage.py migrate in entrypoint.sh
-        "MIGRATE_DB": True,
-    },
+    env_vars=container_env,
     use_cache=ws_settings.use_cache,
     skip_delete=skip_delete,
     save_output=save_output,

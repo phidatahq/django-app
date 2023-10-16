@@ -40,7 +40,7 @@ if [[ "$INSTALL_REQUIREMENTS" = true || "$INSTALL_REQUIREMENTS" = True ]]; then
 fi
 
 ############################################################################
-# Upgrade database
+# Migrate database
 ############################################################################
 
 if [[ "$MIGRATE_DB" = true || "$MIGRATE_DB" = True ]]; then

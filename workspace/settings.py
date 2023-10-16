@@ -4,7 +4,7 @@ from phi.workspace.settings import WorkspaceSettings
 
 #
 # -*- Define workspace settings using a WorkspaceSettings object
-# these values can also be set using environment variables.
+# these values can also be set using environment variables or a .env file
 #
 ws_settings = WorkspaceSettings(
     # Workspace name: used for naming cloud resources
