@@ -21,7 +21,7 @@ dependencies = [
   # Linting
   "ruff",
   # phidata
-  "phidata==2.0.18",
+  "phidata==2.0.19",
 ]
 
 [build-system]
@@ -51,3 +51,6 @@ exclude = ["appenv*", ".venv*"]
 [[tool.mypy.overrides]]
 module = ["django.*", "pgvector.*", "setuptools.*"]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = "tests"

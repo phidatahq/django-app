@@ -17,6 +17,8 @@ main() {
   print_heading "Validating workspace..."
   print_heading "Running: mypy ${REPO_ROOT}"
   mypy ${REPO_ROOT}
+  print_heading "Running: pytest ${REPO_ROOT}"
+  pytest
   print_heading "Running: ruff ${REPO_ROOT}"
   ruff ${REPO_ROOT}
 }

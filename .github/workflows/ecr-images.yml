@@ -3,15 +3,16 @@ name: Build ECR Images
 on: workflow_dispatch
 
 permissions:
-  contents: read
-  # For AWS OIDC Token access as per https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
+  contents:
+    read
+    # For AWS OIDC Token access as per https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services#updating-your-github-actions-workflow
   id-token: write
 
 env:
   ECR_REPO: YOUR ECR REPO
   # Create role using https://aws.amazon.com/blogs/security/use-iam-roles-to-connect-github-actions-to-actions-in-aws/
   AWS_ROLE: YOUR_ROLE_ARN
-  AWS_REGION: us-east-2
+  AWS_REGION: us-east-1
 
 jobs:
   build-dev-image:
