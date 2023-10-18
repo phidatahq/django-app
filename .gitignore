@@ -32,6 +32,9 @@ dist
 # ignore virtualenvs
 .venv
 venv*
-appenv
+aienv*
+apienv*
+appenv*
+llmenv*
 
 .ipynb_checkpoints

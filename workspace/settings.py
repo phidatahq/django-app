@@ -27,11 +27,11 @@ ws_settings = WorkspaceSettings(
     # Availability Zones for AWS resources
     aws_az1="us-east-1a",
     aws_az2="us-east-1b",
-    # Subnet IDs for AWS resources
+    # Subnet IDs in the aws_region
     # subnet_ids=["subnet-xyz", "subnet-xyz"],
     # -*- Image Settings
     # Repository for images (for example, to use ECR use the following format)
-    # image_repo="[ACCOUNT_ID].dkr.ecr.us-east-2.amazonaws.com",
+    # image_repo="[ACCOUNT_ID].dkr.ecr.us-east-1.amazonaws.com",
     # Build images locally
     # build_images=True,
     # Push images after building

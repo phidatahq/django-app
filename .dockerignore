@@ -1,3 +1,5 @@
+.DS_Store
+
 docs
 .git
 config.json
@@ -20,9 +22,12 @@ Pipfile.lock
 .env
 .envrc
 
-# ignore virtualenv
+# ignore virtualenvs
 .venv
 venv*
+aienv*
+apienv*
 appenv*
+llmenv*
 
-.DS_Store
+.ipynb_checkpoints

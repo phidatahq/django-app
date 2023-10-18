@@ -148,7 +148,7 @@ prd_db = DbInstance(
     db_name="app",
     engine=db_engine,
     port=prd_db_port,
-    engine_version="15.3",
+    engine_version="15.4",
     allocated_storage=64,
     # NOTE: For production, use a larger instance type.
     # Last checked price: $0.0650 hourly = ~$50 per month
@@ -164,6 +164,17 @@ prd_db = DbInstance(
     wait_for_delete=False,
 )
 
+# -*- ECS cluster
+launch_type = "FARGATE"
+prd_ecs_cluster = EcsCluster(
+    name=f"{ws_settings.prd_key}-cluster",
+    ecs_cluster_name=ws_settings.prd_key,
+    capacity_providers=[launch_type],
+    skip_delete=skip_delete,
+    save_output=save_output,
+)
+
+# -*- Build container environment
 container_env = {
     "DEBUG": True,
     "RUNTIME_ENV": "prd",
@@ -174,18 +185,18 @@ container_env = {
     "DB_PORT": AwsReference(prd_db.get_db_port),
     "DB_USER": AwsReference(prd_db.get_master_username),
     "DB_PASS": AwsReference(prd_db.get_master_user_password),
-    "DB_SCHEMA": AwsReference(prd_db.get_db_name),
+    "DB_DATABASE": AwsReference(prd_db.get_db_name),
     # Wait for database to be available before starting the application
-    "WAIT_FOR_DB": True,
+    "WAIT_FOR_DB": ws_settings.dev_db_enabled,
     # Migrate database on startup using python manage.py migrate in entrypoint.sh
-    "MIGRATE_DB": True,
+    "MIGRATE_DB": ws_settings.dev_db_enabled,
 }
 
 # -*- Django running on ECS
-launch_type = "FARGATE"
 prd_django = Django(
     name=ws_settings.prd_key,
     enabled=ws_settings.prd_app_enabled,
+    group="app",
     image=prd_app_image,
     command="gunicorn --workers 3 --bind 0.0.0.0:8000 --max-requests 1000 app.wsgi:application",
     # Enable Nginx to serve static files
@@ -198,6 +209,7 @@ prd_django = Django(
     ecs_task_cpu="2048",
     ecs_task_memory="4096",
     ecs_service_count=1,
+    ecs_cluster=prd_ecs_cluster,
     aws_secrets=[prd_secret],
     subnets=ws_settings.subnet_ids,
     security_groups=[prd_sg],
@@ -236,5 +248,6 @@ prd_aws_config = AwsResources(
         prd_db_secret,
         prd_db_subnet_group,
         prd_db,
+        prd_ecs_cluster,
     ],
 )
