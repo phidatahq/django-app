@@ -3,6 +3,7 @@ from os import getenv
 from phi.aws.app.django import Django
 from phi.aws.resource.ec2.security_group import InboundRule, SecurityGroup
 from phi.aws.resources import AwsResources
+from phi.aws.resource.ecs.cluster import EcsCluster
 from phi.aws.resource.rds.db_instance import DbInstance
 from phi.aws.resource.rds.db_subnet_group import DbSubnetGroup
 from phi.aws.resource.reference import AwsReference
