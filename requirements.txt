@@ -38,7 +38,7 @@ numpy==1.26.1
 openai==0.28.1
 packaging==23.2
 pgvector==0.2.3
-phidata==2.0.25
+phidata==2.0.27
 pluggy==1.3.0
 psycopg[binary]==3.1.12
 psycopg-binary==3.1.12
