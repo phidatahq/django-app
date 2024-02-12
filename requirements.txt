@@ -32,7 +32,7 @@ numpy==1.26.3
 openai==1.11.0
 packaging==23.2
 pgvector==0.2.4
-phidata==2.3.34
+phidata==2.3.35
 psycopg[binary]==3.1.17
 psycopg-binary==3.1.17
 pydantic==2.6.0
